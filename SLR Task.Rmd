@@ -1,0 +1,110 @@
+---
+title: Simple Linear Regression Analysis for Prediction of the % of Student based
+  on the Number of Study Hour
+author: "Monone Damilola Elizabeth"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readxl)
+library(ggplot2)
+```
+
+## Introduction
+This document performs a simple linear regression analysis to predict student scores based on study hours.
+
+# Data Loading
+```{r Load the dataset}
+Hours_Scores <- read_excel("Hours_Scores.xlsx")
+
+# Print the first few rows of the data
+head(Hours_Scores)
+```
+
+## Exploratory Data Analysis (EDA)
+To check the structure and summary statistics of the data.
+
+```{r Check the column names}
+# View the first few rows of the data
+head(Hours_Scores)
+
+# Summary statistics
+summary(Hours_Scores)
+
+# Structure of the data
+str(Hours_Scores)
+```
+
+# Visualization of the data
+```{r Scatter plot}
+ggplot(Hours_Scores, aes(x=Hours, y=Scores)) + 
+  geom_point() + 
+  labs(title="Hours vs Scores", x="Study Hours", y="Percentage Score")
+```
+
+The plottted scatter plot of the data is to visualize the relationship between study hours and scores. 
+
+## Linear Regression Model
+```{r Fit the linear model}
+model <- lm(Scores ~ Hours, data=Hours_Scores)
+
+# Summary of the model
+print(summary(model))
+
+# Plot the regression line
+ggplot(Hours_Scores, aes(x=Hours, y=Scores)) + 
+  geom_point() + 
+  geom_smooth(method="lm", col="blue") + 
+  labs(title="Hours vs Scores with Regression Line", x="Study Hours", y="Percentage Score")
+```
+
+The plotted regression line and the scatter points shows a possitive realtionship between the study hours and the percentage scores of the students.
+
+## Predictions and Residuals
+```{r Make predictions}
+predicted_scores <- predict(model, newdata=Hours_Scores)
+
+# Add predictions to the data frame
+Hours_Scores$Predicted_Scores <- predicted_scores
+
+# Calculate residuals
+Hours_Scores$Residuals <- Hours_Scores$Scores - Hours_Scores$Predicted_Scores
+
+# Print the first few rows to verify predictions and residuals
+print(head(Hours_Scores))
+```
+
+## Observed vs Predicted Plot
+```{r Plot the observed vs predicted values}
+ggplot(Hours_Scores, aes(x=Hours, y=Scores)) + 
+  geom_point() + 
+  geom_line(aes(y=Predicted_Scores), color="blue") + 
+  labs(title="Observed vs Predicted Scores", x="Study Hours", y="Scores")
+```
+
+## Model Evaluation
+```{r To calculate the RMSE and MAE}
+# Root Mean Squared Error (RMSE)
+rmse <- sqrt(mean(Hours_Scores$Residuals^2))
+print(paste("RMSE:", rmse))
+
+# Mean Absolute Error (MAE)
+mae <- mean(abs(Hours_Scores$Residuals))
+print(paste("MAE:", mae))
+```
+## Predicting New Data
+```{r Prediction score for a student who studies 9.25 hours per day}
+new_data <- data.frame(Hours = 9.25)
+predicted_score <- predict(model, newdata=new_data)
+print(paste("Predicted score for a student who studies 9.25 hours per day:", predicted_score))
+```
+## Conclusion
+I performed a simple linear regression analysis to predict student scores based on study hours. I evaluated the model using RMSE and MAE, and made predictions for new data. 
+From the analysis, we can draw the following conclusions:
+1. The analysis confirms that increasing the number of study hours has a positive impact on student scores. This relationship is statistically significant and can be used to predict scores based on study hours.
+2. The linear regression model fits the data reasonably well, as indicated by the R-squared value and the residual standard error. However, it is important to consider other potential variables that might influence student scores, which are not included in this simple model.
+3. The RMSE and MAE values provide a quantitative measure of the model's prediction accuracy. While these metrics indicate that the model performs reasonably well, there is still some room for improvement, as reflected by the residuals.
+4. The model can be used to make informed predictions about student scores based on the number of study hours. For example, a student studying 9.25 hours per day is predicted to achieve a specific score, which can help in planning study schedules and setting academic goals.
+
